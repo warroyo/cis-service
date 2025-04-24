@@ -1,0 +1,41 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  creationTimestamp: null
+  name: cis-service.fling.vsphere.vmware.com.1.0.6
+spec:
+  refName: cis-service.fling.vsphere.vmware.com
+  releasedAt: "2025-04-24T17:12:49Z"
+  template:
+    spec:
+      deploy:
+      - kapp: {}
+      fetch:
+      - imgpkgBundle:
+          image: ghcr.io/warroyo/cis-service@sha256:e6a870d46db8b6a44ecb68f4aeb75411cfb8842acfc72f8f4882fede2b1d9773
+      template:
+      - ytt:
+          paths:
+          - config
+      - kbld:
+          paths:
+          - '-'
+          - .imgpkg/images.yml
+  valuesSchema:
+    openAPIv3:
+      additionalProperties: false
+      properties:
+        cis_webhook_package:
+          default: ghcr.io/warroyo/cis-webhook@sha256:3d63e40b1951f64cc5690763ef3683480d8984b3e646f0fc0c76edf014d12fd1
+          type: string
+        cis_webhook_version:
+          default: 1.0.0
+          type: string
+        namespace:
+          default: cis-service
+          type: string
+        python_image:
+          default: python:3.9
+          type: string
+      type: object
+  version: 1.0.6

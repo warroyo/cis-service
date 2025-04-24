@@ -1,0 +1,106 @@
+#@ load("@ytt:data", "data")
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cis-service
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cis-service
+  namespace: cis-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cis-service
+  template:
+    metadata:
+      labels:
+        app: cis-service
+    spec:
+
+      containers:
+      - name: controller
+        securityContext:
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault 
+          capabilities:
+            drop: ["ALL"]  
+        image: #@ data.values.python_image
+        command: ["/bin/sh","-c"]
+        args: ["pip install flask jsonpatch; python /hooks/mutate.py"]
+        ports:
+        - name: http
+          containerPort: 8443
+        volumeMounts:
+        - name: hooks
+          mountPath: /hooks
+        - name: ssl-cis-service
+          mountPath: /ssl
+      volumes:
+      - name: hooks
+        configMap:
+          name: cis-mutate
+      - name: ssl-cis-service
+        secret:
+          secretName: ssl-cis-service
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cis-mutate
+  namespace: cis-service
+data:
+  mutate.py: #@ data.read("mutate.py")
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cis-service
+  namespace: cis-service
+spec:
+  selector:
+    app: cis-service
+  ports:
+  - port: 443
+    targetPort: 8443
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: cis-service
+webhooks:
+  - name: cis-service.cis-service.svc
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values: ["vmware-system-tmc"]
+    failurePolicy: Fail
+    clientConfig:
+      service:
+        name: cis-service
+        namespace: cis-service
+        path: "/mutate"
+      caBundle: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURKekNDQWcrZ0F3SUJBZ0lVTnFnVTlJT0hsREJlZUNLcUVmVXZZdmhKbG44d0RRWUpLb1pJaHZjTkFRRUwKQlFBd0l6RUxNQWtHQTFVRUJoTUNRVlV4RkRBU0JnTlZCQU1NQzJOcGN5MTNaV0pvYjI5ck1CNFhEVEkxTURReQpOREUyTkRNeE9Wb1hEVEk0TURReU16RTJORE14T1Zvd0l6RUxNQWtHQTFVRUJoTUNRVlV4RkRBU0JnTlZCQU1NCkMyTnBjeTEzWldKb2IyOXJNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQXBWOWYKY2RzRWxZRXNoaTFWZzJGQnNFYTJqZExPQnJzVjJQOVA2WnFLWVYzYU5xTThEWml0a05KSHVKam1GZnNjL0dWTQpmcWF5MU80NjZkSFdxOHJvU1YwdytzTmNYYjRxakhMbDEvNTJ4RG9Od1pITHNLNDFrdlJKT1cwMXlmbUJtSjNvClU5RENSNVdyMkFiQ3FVcGljYWUrR0VpcSt0MDlBaFVKc2YweEVVTlJqL01QMUZXRFliZWRIMlJjYzBLZlZCUmwKUGJaVjJpZ0FvK3lDSXgxaUZlUGY5QlNlUzFVNG53YkRBeGZyWTB3UmtnWER0SU1iYU53MkNRRE0zdG01NU0rRwpjbXlENVh5SExUVmZudHR5Zms1cktGNzNjZFUveEVXem02Y2RXdmcwNWUzMnVnVW4vWG1iMFI4Wmx2RE9oR2VlCnVzZW1SY215RGNueHZiQ2xQUUlEQVFBQm8xTXdVVEFkQmdOVkhRNEVGZ1FVRHZJOUg2SUowS003QTlLWWZTcGMKZlZnTjF1SXdId1lEVlIwakJCZ3dGb0FVRHZJOUg2SUowS003QTlLWWZTcGNmVmdOMXVJd0R3WURWUjBUQVFILwpCQVV3QXdFQi96QU5CZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUFEWGdKZ012Vng4K3dLemNja1ptR1R2NVFZQzNvCjI1Y1U0aHh3L1NSdktUQ1lDSFFZTzhlNUh6NDlORmpxOE1USXZoQjZvemFKMXRJVUhzcldwVm1HOVNBa3c3UEMKOFN6YzAzd3hsSSttbG16R1VRU0MzYzBPdlFzUWY2bzZIOHphOWh1OU9vK1dGbVk3bnU5Qjk1UjhtaUhyckEwSgpSdXI0NkpTN0FzYVBzeHBrSWpveDlROWllRWordkRWWXRGNEFZTFhMejFBS1NJZVFWNDhRVzFzTXRtTjFiTU94CnB4YlQySDUyU1dNVmpESFVJdExKR1RaYU40UFplVkYwcXVNb1R2em43SEpNSkVRdmxCMTV0Z0NWS3ZSbmdydlYKVlJ3aEEvSFo4bGFrNGttcXpTVEhhQXhZMkg2bkdNdGdrUTNDcHAyQytwZjJwYjR4ZHl1Y0VRTXErdz09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K"
+    rules:
+      - operations: [ "CREATE","UPDATE" ]
+        apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        resources: ["deployments"]
+      - operations: [ "CREATE","UPDATE" ]
+        apiGroups: ["batch"]
+        apiVersions: ["v1"]
+        resources: ["cronjobs"]
+    admissionReviewVersions: ["v1", "v1beta1"]
+    sideEffects: None
+    timeoutSeconds: 5

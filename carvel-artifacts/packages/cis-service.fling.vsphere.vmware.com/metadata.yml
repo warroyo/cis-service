@@ -1,0 +1,9 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: PackageMetadata
+metadata:
+  creationTimestamp: null
+  name: cis-service.fling.vsphere.vmware.com
+spec:
+  displayName: cis-service
+  longDescription: cis-service.fling.vsphere.vmware.com
+  shortDescription: cis-service.fling.vsphere.vmware.com

@@ -1,0 +1,30 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  annotations:
+    kapp.k14s.io/delete-strategy: orphan
+  creationTimestamp: null
+  name: cis-webhook.field.vmware.com.1.0.0
+spec:
+  refName: cis-webhook.field.vmware.com
+  releasedAt: "2025-04-24T17:12:08Z"
+  template:
+    spec:
+      deploy:
+      - kapp: {}
+      fetch:
+      - imgpkgBundle:
+          image: ghcr.io/warroyo/cis-webhook@sha256:3d63e40b1951f64cc5690763ef3683480d8984b3e646f0fc0c76edf014d12fd1
+      template:
+      - ytt:
+          paths:
+          - config
+      - kbld:
+          paths:
+          - '-'
+          - .imgpkg/images.yml
+  valuesSchema:
+    openAPIv3:
+      default: null
+      nullable: true
+  version: 1.0.0

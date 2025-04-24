@@ -1,0 +1,11 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: PackageMetadata
+metadata:
+  annotations:
+    kapp.k14s.io/delete-strategy: orphan
+  creationTimestamp: null
+  name: cis-webhook.field.vmware.com
+spec:
+  displayName: cis-webhook
+  longDescription: cis-webhook.field.vmware.com
+  shortDescription: cis-webhook.field.vmware.com

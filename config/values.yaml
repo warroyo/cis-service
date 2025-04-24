@@ -1,0 +1,7 @@
+#@data/values-schema
+---
+
+cis_webhook_package: ghcr.io/warroyo/cis-webhook@sha256:3d63e40b1951f64cc5690763ef3683480d8984b3e646f0fc0c76edf014d12fd1
+cis_webhook_version: 1.0.0
+python_image: python:3.9
+namespace: cis-service
