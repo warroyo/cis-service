@@ -9,7 +9,6 @@ import base64
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
 
-deployments = []
 
 podSecuritySpec = {"fsGroup":1000,"fsGroupChangePolicy":"Always","supplementalGroups":[1000],"sysctls":[{"name":"net.ipv4.ping_group_range","value":"0 2147483647"}]}
 containerSecuritySpec = {"runAsNonRoot":True,"runAsGroup":1000,"capabilities":{"drop":["NET_RAW"]},"seLinuxOptions":{"type":"default"},"seccompProfile":{"type":"RuntimeDefault"},"allowPrivilegeEscalation":False,"privileged":False,"readOnlyRootFilesystem":True}

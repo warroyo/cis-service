@@ -7,14 +7,14 @@ metadata:
   name: cis-webhook.field.vmware.com.1.0.0
 spec:
   refName: cis-webhook.field.vmware.com
-  releasedAt: "2025-04-24T17:12:08Z"
+  releasedAt: "2025-04-25T18:22:19Z"
   template:
     spec:
       deploy:
       - kapp: {}
       fetch:
       - imgpkgBundle:
-          image: ghcr.io/warroyo/cis-webhook@sha256:3d63e40b1951f64cc5690763ef3683480d8984b3e646f0fc0c76edf014d12fd1
+          image: ghcr.io/warroyo/cis-webhook@sha256:cbc2818fb899adae37fafc7aac32bd37d4e27012ffe7481c4bafc58600f4f709
       template:
       - ytt:
           paths:

@@ -55,6 +55,10 @@ def webhook():
         return default_response
     
     patch = pkg_patch("add","-",packageVersion)
+    if "additionalPackages" not in bootstrap['spec']:
+        app.logger.info(f"request for {cluster_name} does not contain additional packages, waiting for next update") 
+        return default_response
+    
     for index, package in enumerate(bootstrap['spec']['additionalPackages']):
         if "cis-webhook.field.vmware.com" in package['refName']:
             app.logger.info(f"request for {cluster_name} has cis package, patching") 
