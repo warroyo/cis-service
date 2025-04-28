@@ -2,6 +2,6 @@
 ---
 
 cis_webhook_package: "ghcr.io/warroyo/cis-webhook@sha256:cbc2818fb899adae37fafc7aac32bd37d4e27012ffe7481c4bafc58600f4f709"
-cis_webhook_version: 1.0.0
+cis_webhook_version: "1.0.0"
 python_image: python:3.9
 namespace: cis-service
